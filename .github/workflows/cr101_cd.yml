@@ -32,12 +32,13 @@ jobs:
 
       - name: Publish result
         if: always()
+        env:
+          TEST_OUTCOME: ${{ steps.run_tests.outcome }}
         run: |
           echo "### CI Result" >> $GITHUB_STEP_SUMMARY
-          if [[ "${{ steps.run_tests.outcome }}" == "success" ]]; then
+          if [[ "$TEST_OUTCOME" == "success" ]]; then
             echo "✅ Tests passed successfully!" >> $GITHUB_STEP_SUMMARY
           else
             echo "❌ Tests failed!" >> $GITHUB_STEP_SUMMARY
             exit 1 # This ensures the overall job still shows as a failure in GitHub
           fi
-          
