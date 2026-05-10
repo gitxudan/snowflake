@@ -1,0 +1,19 @@
+# dbt
+logs/
+target/
+dbt_packages/
+modules/
+
+# Dagster
+.tmp_dagster_home_*/
+*.db
+*.complete
+compute_logs/
+
+# Python
+__pycache__/
+*.pyc
+venv/
+.env
+
+        

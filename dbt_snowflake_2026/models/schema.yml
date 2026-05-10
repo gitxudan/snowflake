@@ -1,0 +1,96 @@
+
+version: 2
+
+models:
+  - name: my_first_dbt_model
+    description: "A starter dbt model"
+    columns:
+      - name: id
+        description: "The primary key for this table"
+        data_tests:
+          - unique
+          - not_null
+
+  - name: my_second_dbt_model
+    description: "A starter dbt model"
+    columns:
+      - name: id
+        description: "The primary key for this table"
+        data_tests:
+          - unique
+          - not_null
+
+sources:
+
+  - name: dbt_test            # This is the "Source Name"
+    database: sf2603             # The actual DB name in Snowflake
+    schema: dbt_test   # The actual Schema name
+    tables:
+      - name: simple        # The actual Table name
+        config:
+          loaded_at_field: _ingestion_at   # column in your table
+        #freshness:
+        #  warn_after: {count: 1, period: minute}
+        #  error_after: {count: 3, period: hour}
+
+seeds:
+  - name: customers__1 # the name of the csv file (without the .csv extension)
+    description: "A seed table with strict status codes"
+    columns:
+      - name: id
+        description: "Status code: 1 for Active, 2 for Inactive"
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [1, 2, 3]
+                quote: false    # ensures dbt compares them as numbers not strings
+          - not_null          # Good pracrtice to pair with accepted_values to ensure all values are valid and present
+          - within_range_test:
+              arguments:
+                min_value: 0
+                max_value: 1
+      - name: age
+        description: "Customer age"
+        data_tests:
+          - not_null
+          - is_even
+          - within_range_test:
+              arguments:
+                min_value: 55
+                max_value: 60
+
+
+exposures:
+  - name: weekly_jaffle_metrics
+    label: Jaffles by the Week
+    type: dashboard
+    maturity: high
+    url: https://bi.tool/dashboards/1
+    description: >
+      Did someone say "exponential growth"?
+
+    depends_on:
+      - ref('simple_odd')
+      - ref('simple_rest')
+      #- source('gsheets', 'goals')
+      #- metric('total_revenue')
+
+    owner:
+      name: Betsy 
+      email: xudanbetsy@gmail.com
+  - name: weekly_sales_report
+    label: Sales Performance  by the Week
+    type: analysis
+    maturity: high
+    url: https://google.com
+    description: >
+      Weekly sales performance report for stakeholders. Includes key metrics and trends to inform business decisions.
+
+    depends_on:
+      - ref('stg_orders')
+      - source('dbt_test', 'simple')
+      #- metric('count_orders')
+
+    owner:
+      name: Betsy 
+      email: xudanbetsy@gmail.com
