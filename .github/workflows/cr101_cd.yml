@@ -18,6 +18,7 @@ jobs:
           python-version: "3.11"
 
       - name: Run test
+        id: run_tests
         run: |
           cd cicd_demo
           python -c "from calculator  import addition; assert addition(2,3)==5"
