@@ -1,0 +1,43 @@
+name: CR_101 CD
+  
+on:
+  push:
+    branches:
+      - release_1xx
+
+jobs:
+  test:
+    runs-on: ubuntu-latest     
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run test
+        run: |
+          cd cicd_demo
+          python -c "from calculator  import addition; assert addition(2,3)==5"
+          python -c "from calculator  import subtraction; assert subtraction(5,3)==2"
+          echo "Test passed again!" >> result.txt
+    
+      - name: Upload Test Result
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-report
+          path: cicd_demo/result.txt
+
+      - name: Publish result
+        if: always()
+        run: |
+          echo "### CI Result" >> $GITHUB_STEP_SUMMARY
+          if [[ "${{ steps.run_tests.outcome }}" == "success" ]]; then
+            echo "✅ Tests passed successfully!" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Tests failed!" >> $GITHUB_STEP_SUMMARY
+            exit 1 # This ensures the overall job still shows as a failure in GitHub
+          fi
+          
